@@ -6,7 +6,7 @@ require 'koala'  # Facebook API
 
 SECRET_PATH = "./.env.json"
 if !(File.exists? SECRET_PATH)
-    abort("No env file (with app_id and app_secret present.".red)
+    abort("No env file (with the access token).".red)
 end
 
 begin
@@ -14,6 +14,11 @@ begin
 rescue JSON::ParserError
     abort("Invalid env json".red)
 end
-APP_ID = env_json["app_id"]
-APP_SECRET = env_json["app_secret"]
+ACCESS_TOKEN = env_json['access_token']
+$graph = Koala::Facebook::API.new(ACCESS_TOKEN)
+
+FQL_QUERY = "SELECT post_id, actor_id, target_id, created_time, message, comments FROM stream 
+WHERE source_id = me() AND filter_key='others' AND actor_id!=me() AND created_time > 1407275080"
+q_results = $graph.fql_query(FQL_QUERY)
+
 
