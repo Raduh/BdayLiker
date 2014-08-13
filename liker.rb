@@ -4,29 +4,29 @@ require './util.rb'
 require 'json'
 require 'koala'  # Facebook API
 
-# Config
-SECRET_PATH = "./env.json"
-MAX_TO_PROCESS = 1000  # maximum number of posts we expect to process
-BIRTHDAY_DAY = 13  # 1..31
-BIRTHDAY_MONTH = 8  # 1..12
-
+SECRET_PATH = "./config.json"
 
 if !(File.exists? SECRET_PATH)
-    abort("No env file (with the access token).".red)
+    abort("No config file (with the access token).".red)
 end
 
 begin
     env_json = JSON.parse File.read(SECRET_PATH)
 rescue JSON::ParserError
-    abort("Invalid env json".red)
+    abort("Invalid config json".red)
 end
+B_DAY = env_json['birth_day']
+B_MONTH = env_json['birth_month'] 
+# maximum number of posts we expect to process
+MAX_TO_PROCESS = 1000
 ACCESS_TOKEN = env_json['access_token']
+
 $graph = Koala::Facebook::API.new(ACCESS_TOKEN)
 
 # getting a timestamps before and after the birthday
 current_year = Time.now.year
-tstamp_before = Time.new(current_year, BIRTHDAY_MONTH, BIRTHDAY_DAY - 1, 12, 0).to_i
-tstamp_after = Time.new(current_year, BIRTHDAY_MONTH, BIRTHDAY_DAY + 1, 12, 0).to_i
+tstamp_before = Time.new(current_year, B_MONTH, B_DAY - 1, 12, 0).to_i
+tstamp_after = Time.new(current_year, B_MONTH, B_DAY + 1, 12, 0).to_i
 
 FQL_QUERY =
     "SELECT source_id, actor_id, post_id, created_time, message "\
